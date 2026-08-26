@@ -126,20 +126,7 @@ export default function App() {
     }
   }, [shop]);
 
-  React.useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.has("appLoadId")) {
-      params.delete("appLoadId");
-      const searchString = params.toString();
-      navigate(
-        {
-          pathname: location.pathname,
-          search: searchString ? `?${searchString}` : "",
-        },
-        { replace: true }
-      );
-    }
-  }, [location.search, location.pathname, navigate]);
+
 
   return (
     <AppContext.Provider value={{ hasActivePlan, billingUrl, shop }}>
