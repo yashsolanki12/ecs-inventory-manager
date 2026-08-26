@@ -1,11 +1,6 @@
 import React from "react";
 import NoPlanFallback from "../pages/plans/no-plan-fallback";
-import {
-  Outlet,
-  useLoaderData,
-  useRouteError,
-  useLocation,
-} from "react-router";
+import { Outlet, useLoaderData, useLocation, useRouteError, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, sessionStorage } from "../shopify.server";
@@ -67,15 +62,14 @@ export const loader = async ({ request }) => {
   } catch (err) {
     console.error("[App] Billing check failed:", err.message);
   }
-
   if (hasActivePlan && activeSubscription) {
     syncPlanToBackend(
       session?.shop,
       activeSubscription.name.toLowerCase(),
       activeSubscription.id,
-    ).catch((err) =>
-      console.error("[App] Plan sync to backend failed:", err.message),
-    );
+    ).catch((err) => {
+      console.error("[App] Plan sync to backend failed:", err.message);
+    });
   }
   let billingUrl = "";
   if (session?.shop) {
@@ -97,8 +91,9 @@ export const loader = async ({ request }) => {
 
 export default function App() {
   const { apiKey, hasActivePlan, billingUrl, shop } = useLoaderData();
-
   const location = useLocation();
+  const navigate = useNavigate();
+
   const isPlansRoute = location.pathname === "/app/plans";
 
   const queryClient = React.useMemo(
@@ -121,9 +116,30 @@ export default function App() {
     if (!shop) return;
     const key = `auth_post_sync_${shop}`;
     if (!localStorage.getItem(key)) {
-      authPostSync(shop).then(() => localStorage.setItem(key, "true"));
+      authPostSync(shop)
+        .then(() => {
+          localStorage.setItem(key, "true");
+        })
+        .catch((error) => {
+          console.error("[App] Auth post sync failed:", error);
+        });
     }
   }, [shop]);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has("appLoadId")) {
+      params.delete("appLoadId");
+      const searchString = params.toString();
+      navigate(
+        {
+          pathname: location.pathname,
+          search: searchString ? `?${searchString}` : "",
+        },
+        { replace: true }
+      );
+    }
+  }, [location.search, location.pathname, navigate]);
 
   return (
     <AppContext.Provider value={{ hasActivePlan, billingUrl, shop }}>

@@ -51,7 +51,7 @@ const AlertsListPage = () => {
     severity: "success",
   });
   const tableRef = React.useRef(null);
-  const hasGeneratedAlerts = React.useRef(false);
+  const hasTriggeredGenerate = React.useRef(false);
 
   const {
     data: responseData,
@@ -87,10 +87,17 @@ const AlertsListPage = () => {
   );
 
   React.useEffect(() => {
-    if (shopDomain && !hasGeneratedAlerts.current) {
-      hasGeneratedAlerts.current = true;
-      generateAlertsMutation.mutate(shopDomain);
+    if (!shopDomain || hasTriggeredGenerate.current) return;
+    const storageKey = `alerts_generated_${shopDomain}`;
+    const today = new Date().toISOString().slice(0, 10);
+    const lastGenerated = localStorage.getItem(storageKey);
+    if (lastGenerated !== today) {
+      hasTriggeredGenerate.current = true;
+      generateAlertsMutation.mutate(shopDomain, {
+        onSuccess: () => localStorage.setItem(storageKey, today),
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shopDomain]);
 
   const handleView = (alert) => {
