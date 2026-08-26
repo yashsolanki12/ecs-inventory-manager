@@ -1,12 +1,15 @@
-import { redirect, Form, useLoaderData } from "react-router";
+import { redirect, Form, useLoaderData, useNavigate } from "react-router";
 import { login } from "../../shopify.server";
 import styles from "./styles.module.css";
+import React from "react";
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
 
-  if (url.searchParams.get("shop")) {
-    throw redirect(`/app?${url.searchParams.toString()}`);
+  if (url.searchParams.get("shop") || url.searchParams.get("appLoadId")) {
+    const params = new URLSearchParams(url.searchParams);
+    params.delete("appLoadId"); // Optional: clean it up during redirect
+    throw redirect(`/app?${params.toString()}`);
   }
 
   return { showForm: Boolean(login) };
@@ -14,8 +17,12 @@ export const loader = async ({ request }) => {
 
 export default function App() {
   const { showForm } = useLoaderData();
+  const navigate = useNavigate();
 
-
+  React.useEffect(() => {
+    // If App Bridge pushes us here client-side (sidebar click), immediately go to Dashboard
+    navigate("/app", { replace: true });
+  }, [navigate]);
 
   return (
     <div className={styles.index}>
