@@ -10,7 +10,7 @@ embedded = true
 scopes = "read_customers,read_inventory,read_locations,read_markets_home,read_orders,read_products,unauthenticated_read_product_listings,unauthenticated_read_product_tags,write_customers,write_inventory,write_orders,write_products"
 optional_scopes = []
 
-use_legacy_install_flow = true
+
 
 [webhooks]
 
