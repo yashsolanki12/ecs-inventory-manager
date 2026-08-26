@@ -34,6 +34,12 @@ uri = "https://inventory-lifecycle-manager-backend.onrender.com/api/webhooks/inv
 
 topics = ["inventory_levels/update"]
 
+[[webhooks.subscriptions]]
+
+uri = "https://inventory-lifecycle-manager-backend.onrender.com/api/webhooks/orders/create"
+
+topics = ["orders/create"]
+
 
 [[webhooks.subscriptions]]
 
